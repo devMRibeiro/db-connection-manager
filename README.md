@@ -1,4 +1,4 @@
-# UtilDB - Java Database Utility
+# ConnFactory - Java Database Utility
 
 ## Descrição
 
