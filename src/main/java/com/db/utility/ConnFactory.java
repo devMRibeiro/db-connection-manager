@@ -18,11 +18,10 @@ public class ConnFactory {
 				return null;
 			}
 
-			String url = props.getProperty("DB_URL");
-			String user = props.getProperty("DB_USER");
-			String pass = props.getProperty("DB_PASS");
-			
-			return DriverManager.getConnection(url, user, pass);
+			return DriverManager.getConnection(
+					props.getProperty("DB_URL"),
+					props.getProperty("DB_USER"),
+					props.getProperty("DB_PASS"));
 
 		} catch (Exception e) {
 			System.out.println("Erro ao tentar estabelecer uma conexão.");
@@ -32,6 +31,7 @@ public class ConnFactory {
 	}
 
 	public static void close(AutoCloseable ... resources) {
+
 		if (resources.length == 0) {
 			System.out.println("Deve conter pelo menos 1 recurso AutoCloseable");
 			return;
