@@ -1,5 +1,42 @@
 # ConnFactory - Java Database Utility
 
+## Description
+
+The `ConnFactory` project provides utility methods for managing database connections and resources in Java. It includes:
+
+- A method to open a database connection using JDBC.
+- A method to close multiple resources like `Connection`, `PreparedStatement`, and `ResultSet` with automatic handling of exceptions.
+
+This project is useful for Java applications that interact with databases, providing a clean and reusable approach to managing database connections and resources.
+
+## Features
+
+- **Database Connection**: Open a database connection using properties loaded from `application.properties`.
+- **Resource Management**: Free resources like `Connection`, `PreparedStatement`, `ResultSet` using the `close()` method.
+- **Error Handling**: Proper error handling during connection opening and resource closing.
+
+## Prerequisites
+
+- Java 8 or higher.
+- JDBC-compatible database (MySQL, PostgreSQL, etc.).
+- `application.properties` configuration file for database credentials.
+
+## Usage
+```
+public static void main(String[] args) {
+		Connection conn = null;
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+
+		try {
+
+			conn = ConnFactory.open();
+			pstm = conn.prepareStatement("SELECT * FROM your_table");
+			rs = pstm.executeQuery();
+```
+---
+## pt-BR
+
 ## Descrição
 
 O projeto `db-connection-manager` fornece métodos para gerenciar uma conexão e liberar recursos `AutoCloseable` com Banco de Dados relacional em Java. Inclui:
@@ -42,42 +79,6 @@ public static void main(String[] args) {
 	}
 ```
 
----
-## EN:
-
-## Description
-
-The `ConnFactory` project provides utility methods for managing database connections and resources in Java. It includes:
-
-- A method to open a database connection using JDBC.
-- A method to close multiple resources like `Connection`, `PreparedStatement`, and `ResultSet` with automatic handling of exceptions.
-
-This project is useful for Java applications that interact with databases, providing a clean and reusable approach to managing database connections and resources.
-
-## Features
-
-- **Database Connection**: Open a database connection using properties loaded from `application.properties`.
-- **Resource Management**: Free resources like `Connection`, `PreparedStatement`, `ResultSet` using the `close()` method.
-- **Error Handling**: Proper error handling during connection opening and resource closing.
-
-## Prerequisites
-
-- Java 8 or higher.
-- JDBC-compatible database (MySQL, PostgreSQL, etc.).
-- `application.properties` configuration file for database credentials.
-
-## Usage
-```
-public static void main(String[] args) {
-		Connection conn = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-
-		try {
-
-			conn = ConnFactory.open();
-			pstm = conn.prepareStatement("SELECT * FROM your_table");
-			rs = pstm.executeQuery();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
