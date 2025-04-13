@@ -1,5 +1,7 @@
 package com.db.utility;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
@@ -23,47 +25,84 @@ import java.util.Properties;
  * @author Michael D. Ribeiro
  */
 public class ConnFactory {
-
+	
 	/**
-   * Estabelece uma conexão com o banco de dados utilizando as propriedades fornecidas
-   * no arquivo {@code application.properties}.
-   * 
-   * <p>Este método carrega as propriedades de configuração do banco de dados
-   * a partir do arquivo de propriedades e tenta estabelecer uma conexão utilizando o {@code DriverManager}.
-   * Se o arquivo de propriedades não for encontrado ou estiver mal-formatado, será retornado {@code null}.</p>
-   *
-   * @return Uma instância de {@link Connection} representando a conexão com o banco de dados,
-   * 					ou {@code null} se ocorrer um erro ao tentar estabelecer a conexão.
-   */
+	 * Estabelece uma conexão com o banco de dados utilizando as propriedades fornecidas
+	 * no arquivo {@code application.properties}.
+	 * 
+	 * <p>Este método carrega as propriedades de configuração do banco de dados
+	 * a partir do arquivo de propriedades e tenta estabelecer uma conexão utilizando o {@code DriverManager}.
+	 * Se o arquivo de propriedades não for encontrado ou estiver mal-formatado, será retornado {@code null}.</p>
+	 *
+	 * @return Uma instância de {@link Connection} representando a conexão com o banco de dados,
+	 * 					ou {@code null} se ocorrer um erro ao tentar estabelecer a conexão.
+	 */
 	public static Connection open() {
 		Properties props = new Properties();
+		InputStream inputStream = null;
 		try {
 
-			props.load(ConnFactory.class.getClassLoader().getResourceAsStream("application.properties"));
+			inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties");
+			
+			if (inputStream == null)
+				throw new IllegalArgumentException("application.properties não encontrado.");
+
+			props.load(inputStream);
+
+			if (validateProps(props))
+				return null;
 
 			if (props == null || props.isEmpty())
-				throw new IllegalArgumentException("application.properties não encontrado ou arquivo mal-formatado.");
+				throw new IllegalArgumentException("arquivo mal-formatado.");
 
 			return DriverManager.getConnection(
 					props.getProperty("DB_URL"),
 					props.getProperty("DB_USER"),
 					props.getProperty("DB_PASS"));
-
 		} catch (Exception e) {
 			throw new RuntimeException("Erro ao tentar estabelecer uma conexão.", e);
+		} finally {
+			close(inputStream);
 		}
 	}
 
+	public static boolean validateProps(Properties props) throws FileNotFoundException {
+		boolean bError = false;
+
+		String missingRequiredKey = "";
+
+		if (!props.containsKey("DB_URL")) {
+			bError = true;
+			missingRequiredKey = "\nDB_URL";
+		}
+
+		if (!props.containsKey("DB_USER")) {
+			bError = true;
+			missingRequiredKey += "\nDB_USER";
+		}
+
+		if (!props.containsKey("DB_PASS")) {
+			bError = true;
+			missingRequiredKey += "\nDB_PASS";
+		}
+
+		if (bError)
+			throw new IllegalArgumentException("\nMissing required key:" + missingRequiredKey);
+
+		return bError;
+	}
+
 	/**
-   * Libera os recursos {@code AutoCloseable} passados como parâmetros.
-   * 
-   * <p>Este método percorre todos os recursos passados no array e tenta fechá-los, começando pelo último recurso. 
-   * Caso um recurso não possa ser fechado corretamente, uma mensagem de erro será exibida. 
-   * É importante garantir que todos os recursos sejam fechados para evitar vazamentos de memória ou conexões.</p>
-   * 
-   * @param resources Array de recursos {@code AutoCloseable} a serem fechados. 
-   *         Ao menos um recurso deve ser fornecido, caso contrário, uma mensagem de erro será exibida.
-   */
+	 * Libera os recursos {@code AutoCloseable} passados como parâmetros.
+	 * 
+	 * <p>Este método percorre todos os recursos passados no array e tenta fechá-los, começando pelo último recurso. 
+	 * Caso um recurso não possa ser fechado corretamente, uma mensagem de erro será exibida. 
+	 * É importante garantir que todos os recursos sejam fechados para evitar vazamentos de memória ou conexões.</p>
+	 *
+	 * Ao menos um recurso deve ser fornecido, caso contrário, uma mensagem de erro será exibida.
+	 * 
+	 * @param resources Array de recursos {@code AutoCloseable} a serem fechados.
+	 */
 	public static void close(AutoCloseable ... resources) {
 
 		if (resources.length == 0)
