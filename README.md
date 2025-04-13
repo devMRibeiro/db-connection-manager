@@ -24,15 +24,21 @@ This project is useful for Java applications that interact with databases, provi
 ## Usage
 ```
 public static void main(String[] args) {
-		Connection conn = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
+	Connection conn = null;
+	PreparedStatement pstm = null;
+	ResultSet rs = null;
 
-		try {
+	try {
+		conn = ConnFactory.open();
+		pstm = conn.prepareStatement("SELECT * FROM your_table");
+		rs = pstm.executeQuery();
 
-			conn = ConnFactory.open();
-			pstm = conn.prepareStatement("SELECT * FROM your_table");
-			rs = pstm.executeQuery();
+	} catch (SQLException e) {
+		e.printStackTrace();
+	} finally {
+		ConnFactory.close(rs, pstm, conn);
+	}
+}
 ```
 ---
 ## pt-BR
@@ -61,29 +67,19 @@ Este projeto é útil para aplicações Java que interagem com Banco de Dados, f
 ## Exemplo de uso:
 ```
 public static void main(String[] args) {
-		Connection conn = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
+	Connection conn = null;
+	PreparedStatement pstm = null;
+	ResultSet rs = null;
 
-		try {
+	try {
+		conn = ConnFactory.open();
+		pstm = conn.prepareStatement("SELECT * FROM your_table");
+		rs = pstm.executeQuery();
 
-			conn = ConnFactory.open();
-			pstm = conn.prepareStatement("SELECT * FROM your_table");
-			rs = pstm.executeQuery();
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			ConnFactory.close(rs, pstm, conn);
-		}
+	} catch (SQLException e) {
+		e.printStackTrace();
+	} finally {
+		ConnFactory.close(rs, pstm, conn);
 	}
-```
-
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			ConnFactory.close(rs, pstm, conn);
-		}
-	}
+}
 ```
