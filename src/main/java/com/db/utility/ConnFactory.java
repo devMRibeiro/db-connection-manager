@@ -38,6 +38,7 @@ public class ConnFactory {
 	 * 					ou {@code null} se ocorrer um erro ao tentar estabelecer a conexão.
 	 */
 	public static Connection open() {
+		Connection conn = null;
 		Properties props = new Properties();
 		InputStream inputStream = null;
 		try {
@@ -55,10 +56,10 @@ public class ConnFactory {
 			if (props == null || props.isEmpty())
 				throw new IllegalArgumentException("arquivo mal-formatado.");
 
-			return DriverManager.getConnection(
-					props.getProperty("DB_URL"),
-					props.getProperty("DB_USER"),
-					props.getProperty("DB_PASS"));
+			conn = DriverManager.getConnection(props.getProperty("DB_URL"), props.getProperty("DB_USER"), props.getProperty("DB_PASS"));
+			conn.setAutoCommit(false);
+			return conn;
+
 		} catch (Exception e) {
 			throw new RuntimeException("Erro ao tentar estabelecer uma conexão.", e);
 		} finally {
