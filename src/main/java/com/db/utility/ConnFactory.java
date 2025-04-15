@@ -7,36 +7,46 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 /**
- * A classe {@code ConnFactory} é responsável por gerenciar a criação e 
- * o fechamento de conexões com o banco de dados.
- * Ela fornece métodos estáticos para abrir e fechar conexões,
- * garantindo que os recursos sejam manipulados adequadamente.
+ * The {@code ConnFactory} class is responsible for managing the creation and closing
+ * of database connection resources in a Java application.
  * 
- * <p>Este utilitário usa um arquivo de configuração de propriedades {@code application.properties}
- * para obter os dados necessários para a conexão com o banco, como a URL, o usuário e a senha.</p>
+ * <p>This utility relies on the {@code application.properties} file to obtain database
+ * connection details, such as the URL, username, and password, which are essential for
+ * establishing a connection with the database.</p>
  * 
- * <p>O método {@code open()} tenta abrir uma conexão com o banco de dados com base nas
- * configurações fornecidas no arquivo {@code application.properties}.
- * Se o arquivo não for encontrado ou estiver mal-formatado, será exibida uma mensagem de erro.</p>
+ * <p>The {@code open()} method attempts to establish a connection to the database
+ * using the credentials provided in the {@code application.properties} file. If the
+ * file is missing, malformatted, or contains invalid values, an error message will be
+ * displayed.</p>
  * 
- * <p>O método {@code close()} é utilizado para fechar os recursos {@code AutoCloseable},
- * como conexões, ResultSets e Statements, garantindo que todos os recursos sejam corretamente liberados.</p>
+ * <p>The {@code close()} method is used to close {@code AutoCloseable} resources, such as
+ * database connections, {@code ResultSet}, {@code Statement}, and other resources,
+ * ensuring they are properly freed from memory.</p>
+ * 
+ * <p>Note that the {@code application.properties} file should be available in the project's
+ * classpath and must contain the required keys: {@code DB_URL}, {@code DB_USER}, and
+ * {@code DB_PASS}.</p>
  * 
  * @author Michael D. Ribeiro
  */
 public class ConnFactory {
-	
+
 	/**
-	 * Estabelece uma conexão com o banco de dados utilizando as propriedades fornecidas
-	 * no arquivo {@code application.properties}.
-	 * 
-	 * <p>Este método carrega as propriedades de configuração do banco de dados
-	 * a partir do arquivo de propriedades e tenta estabelecer uma conexão utilizando o {@code DriverManager}.
-	 * Se o arquivo de propriedades não for encontrado ou estiver mal-formatado, será retornado {@code null}.</p>
-	 *
-	 * @return Uma instância de {@link Connection} representando a conexão com o banco de dados,
-	 * 					ou {@code null} se ocorrer um erro ao tentar estabelecer a conexão.
-	 */
+     * Establishes a connection to the database using the properties provided
+     * in the {@code application.properties} file.
+     * 
+     * <p>This method loads the database configuration properties from the
+     * {@code application.properties} file and attempts to establish a connection using
+     * {@code DriverManager}. If the properties file is missing or malformed, the method
+     * will throw an exception. The method also sets auto-commit to {@code false} to enable
+     * manual transaction management.</p>
+     * 
+     * @return An instance of {@link Connection} representing the connection to the database,
+     *         or {@code null} if an error occurs while establishing the connection.
+     * 
+     * @throws RuntimeException If any error occurs during connection establishment, including
+     * 		   issues with loading the properties file or database connection.
+     */
 	public static Connection open() {
 		Connection conn = null;
 		Properties props = new Properties();
@@ -46,7 +56,7 @@ public class ConnFactory {
 			inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties");
 			
 			if (inputStream == null)
-				throw new IllegalArgumentException("application.properties não encontrado.");
+				throw new IllegalArgumentException("application.properties file not found.");
 
 			props.load(inputStream);
 
@@ -54,19 +64,32 @@ public class ConnFactory {
 				return null;
 
 			if (props == null || props.isEmpty())
-				throw new IllegalArgumentException("arquivo mal-formatado.");
+				throw new IllegalArgumentException("malformatted file.");
 
 			conn = DriverManager.getConnection(props.getProperty("DB_URL"), props.getProperty("DB_USER"), props.getProperty("DB_PASS"));
 			conn.setAutoCommit(false);
 			return conn;
 
 		} catch (Exception e) {
-			throw new RuntimeException("Erro ao tentar estabelecer uma conexão.", e);
+			throw new RuntimeException("An error occurred while establishing the connection.", e);
 		} finally {
 			close(inputStream);
 		}
 	}
 
+	/**
+     * Validates the {@code application.properties} file to ensure all required keys are present.
+     * 
+     * <p>This method checks whether the required properties for database connection configuration
+     * ({@code DB_URL}, {@code DB_USER}, and {@code DB_PASS}) exist in the loaded properties file.
+     * If any key is missing, an exception will be thrown with a description of the missing keys.</p>
+     * 
+     * @param props The {@link Properties} object representing the database connection settings.
+     * 
+     * @return {@code true} if validation fails (i.e., a required property is missing), {@code false} otherwise.
+     * 
+     * @throws IllegalArgumentException If one or more required keys are missing from the properties file.
+     */
 	public static boolean validateProps(Properties props) throws FileNotFoundException {
 		boolean bError = false;
 
@@ -94,20 +117,22 @@ public class ConnFactory {
 	}
 
 	/**
-	 * Libera os recursos {@code AutoCloseable} passados como parâmetros.
-	 * 
-	 * <p>Este método percorre todos os recursos passados no array e tenta fechá-los, começando pelo último recurso. 
-	 * Caso um recurso não possa ser fechado corretamente, uma mensagem de erro será exibida. 
-	 * É importante garantir que todos os recursos sejam fechados para evitar vazamentos de memória ou conexões.</p>
-	 *
-	 * Ao menos um recurso deve ser fornecido, caso contrário, uma mensagem de erro será exibida.
-	 * 
-	 * @param resources Array de recursos {@code AutoCloseable} a serem fechados.
-	 */
+     * Closes one or more {@code AutoCloseable} resources.
+     * 
+     * <p>This method ensures that all resources passed to it (such as database connections, 
+     * {@code ResultSet}, {@code Statement}, etc.) are properly closed to avoid resource leaks.</p>
+     * 
+     * <p>If no resources are provided, an {@link IllegalArgumentException} is thrown.</p>
+     * 
+     * @param resources One or more {@code AutoCloseable} resources to be closed.
+     * 
+     * @throws IllegalArgumentException If no resources are provided.
+     * @throws RuntimeException If any error occurs while closing a resource.
+     */
 	public static void close(AutoCloseable ... resources) {
 
 		if (resources.length == 0)
-			throw new IllegalArgumentException("Deve conter pelo menos 1 recurso AutoCloseable");
+			throw new IllegalArgumentException("At least one AutoCloseable resource must be provided.");
 
 		for (int i = resources.length - 1; i >= 0; i--) {
 			AutoCloseable resource = resources[i];
@@ -115,7 +140,7 @@ public class ConnFactory {
 				try {
 					resource.close();
 				} catch (Exception e) {
-					throw new RuntimeException("Erro ao tentar liberar recurso: " + resource + "\n" + e);
+					throw new RuntimeException("Error occurred while attempting to release resource: " + resource + "\n" + e);
 				}
 			}
 		}
