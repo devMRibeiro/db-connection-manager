@@ -1,6 +1,5 @@
-package com.db.utility;
+package com.db.utility.impl;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -32,6 +31,8 @@ import java.util.Properties;
  */
 public class ResUtil {
 
+	private static String missingRequiredKey;
+
 	/**
      * Establishes a connection to the database using the properties provided
      * in the {@code application.properties} file.
@@ -61,8 +62,8 @@ public class ResUtil {
 
 			props.load(inputStream);
 
-			if (validateProps(props))
-				return null;
+			if (!validateProps(props))
+				throw new IllegalArgumentException("\nMissing required key:" + missingRequiredKey);
 
 			if (props == null || props.isEmpty())
 				throw new IllegalArgumentException("malformatted file.");
@@ -91,30 +92,25 @@ public class ResUtil {
      * 
      * @throws IllegalArgumentException If one or more required keys are missing from the properties file.
      */
-	public static boolean validateProps(Properties props) throws FileNotFoundException {
-		boolean bError = false;
-
-		String missingRequiredKey = "";
+	public static boolean validateProps(Properties props) {
+		boolean allSuccess = true;
 
 		if (!props.containsKey("DB_URL")) {
-			bError = true;
+			allSuccess = false;
 			missingRequiredKey = "\nDB_URL";
 		}
 
 		if (!props.containsKey("DB_USER")) {
-			bError = true;
+			allSuccess = false;
 			missingRequiredKey += "\nDB_USER";
 		}
 
 		if (!props.containsKey("DB_PASS")) {
-			bError = true;
+			allSuccess = false;
 			missingRequiredKey += "\nDB_PASS";
 		}
 
-		if (bError)
-			throw new IllegalArgumentException("\nMissing required key:" + missingRequiredKey);
-
-		return bError;
+		return allSuccess;
 	}
 
 	/**
