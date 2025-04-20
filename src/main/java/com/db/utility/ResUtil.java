@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.util.Properties;
 
 /**
- * The {@code ConnFactory} class is responsible for managing the creation and closing
+ * The {@code ResUtil} class is responsible for managing the creation and closing
  * of database connection resources in a Java application.
  * 
  * <p>This utility relies on the {@code application.properties} file to obtain database
@@ -27,9 +27,10 @@ import java.util.Properties;
  * classpath and must contain the required keys: {@code DB_URL}, {@code DB_USER}, and
  * {@code DB_PASS}.</p>
  * 
+ * @version 1.4.0
  * @author Michael D. Ribeiro
  */
-public class ConnFactory {
+public class ResUtil {
 
 	/**
      * Establishes a connection to the database using the properties provided
